@@ -1,46 +1,77 @@
-# Getting Started with Create React App
+# Installation
+```
+yarn add use-callback-but-better
+```
+# Why not React.useCallback()
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The goal of React's useCallback is to prevent over-rendering when passing a callback to a memoized components by returning an old reference to a callback. However it frequently fails at this job.
 
-## Available Scripts
+Imagine this example where you implement a textfield where a button controls the case of the letters typed.
 
-In the project directory, you can run:
+```js
+import React from 'react';
 
-### `yarn start`
+const TextFieldWithCasing: React.FC = () => {
+  const [text, setText] = React.useState('');
+  const [upperCase, setUpperCase] = React.useState(false);
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  const handleTyping = React.useCallback((newText: string) => {
+    setText(upperCase ? newText.toUpperCase() : newText.toLowerCase());
+  }, [upperCase])
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+  return <div>
+    <MemoTextField text={text} onChange={handleTyping} />
+    <button onClick={() => setUpperCase(bool => !bool)}>Toggle Letter Case</button>
+  </div>
+};
+```
 
-### `yarn test`
+You might write this with `React.useCallback` to improve performance by preventing unnecessary re-renders of `MemoTextField`. However in this example, you will never get a cache hit and the useCallback only hurts performance. Even when the user only toggles the button, the TextField will re-render because the callback also gets updated. This doesn't need to happen!
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+You could fix this performance bug by creating a reference object:
 
-### `yarn build`
+```js
+import React from 'react';
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+const TextFieldWithCasing: React.FC = () => {
+  const [text, setText] = React.useState('');
+  const [upperCase, setUpperCase] = React.useState(false);
+  const [ref] = React.useState({ upperCase });
+  ref.upperCase = upperCase;
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+  const handleTyping = React.useCallback((newText: string) => {
+    const { upperCase } = ref;
+    setText(upperCase ? newText.toUpperCase() : newText.toLowerCase());
+  }, [ref])
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+  return <div>
+    <MemoTextField text={text} onChange={handleTyping} />
+    <button onClick={() => setUpperCase(bool => !bool)}>Toggle Letter Case</button>
+  </div>
+};
+```
 
-### `yarn eject`
+This successfully prevents the over-rendering but it is an ugly and hard to maintain pattern.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+This library abstracts this pattern into a simple hook. As an added bonus, typescript will help you maintain the dependency array without the need for a linter.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Example
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```js
+import React from 'react';
+import { useRefCallback } from 'use-callback-but-better';
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+const TextFieldWithCasing: React.FC = () => {
+  const [text, setText] = React.useState('');
+  const [upperCase, setUpperCase] = React.useState(false);
 
-## Learn More
+  const handleTyping = useCallback((upperCase) => (newText: string) => {
+    setText(upperCase ? newText.toUpperCase() : newText.toLowerCase());
+  }, [upperCase])
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+  return <div>
+    <MemoTextField text={text} onChange={handleTyping} />
+    <button onClick={() => setUpperCase(bool => !bool)}>Toggle Letter Case</button>
+  </div>
+};
+```

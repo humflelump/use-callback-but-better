@@ -534,3 +534,5 @@ export function useCallbackRef(callback, deps) {
     [ref]
   );
 }
+
+export default useCallbackRef;

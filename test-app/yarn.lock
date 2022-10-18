@@ -9406,6 +9406,11 @@ url@^0.11.0:
     punycode "1.3.2"
     querystring "0.2.0"
 
+use-callback-but-better@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/use-callback-but-better/-/use-callback-but-better-0.0.2.tgz#1ce09effd45c49a21fd4dc64ce226b0e5fd0e9cc"
+  integrity sha512-4PfrZxfKK+Goe46NXK3n6zrsLNYZkzkmCfLah7C1WXW0XagaL5+DmRkz/p3i1Y1nv+4Djo1ZN9Tui2ggrWCc6g==
+
 use@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"
