@@ -65,7 +65,7 @@ const TextFieldWithCasing: React.FC = () => {
   const [text, setText] = React.useState('');
   const [upperCase, setUpperCase] = React.useState(false);
 
-  const handleTyping = useCallback((upperCase) => (newText: string) => {
+  const handleTyping = useRefCallback((upperCase) => (newText: string) => {
     setText(upperCase ? newText.toUpperCase() : newText.toLowerCase());
   }, [upperCase])
 
